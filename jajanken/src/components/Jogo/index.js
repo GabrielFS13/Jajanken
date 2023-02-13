@@ -1,9 +1,16 @@
 import Buttons from '../Buttons'
 import './Jogos.css'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+const { io } = require("socket.io-client");
+const link = process.env.REACT_APP_URL_SOCKET
+
+const socket = io(link);
+
+console.log(link)
 
 
 const Jogos = () =>{
+
     const skins = {
         "realista" :{
             "tesoura": "/img/realista/tesoura.png",
@@ -17,20 +24,60 @@ const Jogos = () =>{
         }
     }
 
-    const [escolha, setEscolha] = useState('')
-    const [botEscolha, setBot] = useState('')
-    const [status, setStatus] = useState('')
-    const [placar, setPlacar] = useState({"player": 0, "bot": 0})
+    socket.on("connect", () => {
+       console.log("Novo Jogador Conectado")
+    });
 
-    console.log(`Player: ${placar.player}, BOT: ${placar.bot}`)
+    function enviaJogada(jogada){
+        setEscolha(jogada)
+        const item = jogada.split('/')
+        socket.emit('jogada', {
+            skin: item[2],
+            item: item[3],
+            id: id
+         })
+        }
+
+    useEffect( () =>{  
+
+        socket.on("jogadas", (res) =>{
+           setStatus(res.status)
+           if(res.p1.id !== id){
+            setOponente("/img/desenho/"+res.p1.item)
+            }else{
+            setOponente("/img/desenho/"+res.p2.item)
+            }
+        })
+
+
+        socket.on('logado', (res) =>{
+            console.log(res)
+            setOponenteID(res.player)
+        })
+        
+    }, [socket])
+
 
     
+
+    const [id, setID] = useState('Guest'+Math.floor(Math.random()*300))
+    const [oponenteID, setOponenteID] = useState('')
+    const [escolha, setEscolha] = useState('')
+    const [opoente, setOponente] = useState('')
+    const [status, setStatus] = useState('')
+
+    useEffect( () =>{
+
+        socket.emit("jogadores", {
+            player: id
+       })
+    }, [oponenteID])
 
     return(
         <section className="jogo">
             <div className='placar'>
-                <h2>Player: {placar.player}</h2>
-                <h2>Bot: {placar.bot}</h2> 
+                <h2><input onChange={(e) => setID(e.target.value)} value={id} /></h2>
+                <h2>{oponenteID}</h2> 
             </div>
             <div className="escolhas">
                 <div className="choice">
@@ -38,22 +85,15 @@ const Jogos = () =>{
                 </div>
                     X
                 <div className="choice">
-                    {botEscolha ? <img src={botEscolha} alt="Escolha do BOT" /> :  <h2>BOT está aguardando a sua jogada!</h2> }
+                    {opoente ? <img src={opoente} alt="Escolha do Oponente" /> :  <h2>Aguardando a sua jogada!</h2> }
                 </div>
             </div>
             <div className='Resultado'>
-                {status === "Você venceu!!!" ? <span className='win'>{status}</span> 
-                : status === "Você perdeu!!!" ? <span className='defeat'>{status}</span> 
-                : <span className='draw'>{status}</span>
-                } 
+                {status} 
             </div>
             <div className="botoes">
                 <Buttons skin={skins.realista} 
-                        player_choice={escolha => setEscolha(escolha)} 
-                        bot_choice={escolha => setBot(escolha)}
-                        resultados = {res => setStatus(res)}
-                        placarAtual = {placar}
-                        placar = {pnts => setPlacar(pnts)}
+                        jogada={enviaJogada} 
                 />
             </div>
         </section>
