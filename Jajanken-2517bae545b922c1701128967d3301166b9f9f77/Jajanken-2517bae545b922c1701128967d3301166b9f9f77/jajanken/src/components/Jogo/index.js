@@ -4,23 +4,39 @@ import React, { useState } from 'react';
 
 
 const Jogos = () =>{
-    const skins = {
-        "realista" :{
+    const skins = [
+        {
+            "estilo": "Realista",
             "tesoura": "/img/realista/tesoura.png",
             "pedra": "/img/realista/pedra.png",
             "papel": "/img/realista/papel.png"
         },
-        "desenho":{
+        {
+            "estilo": "Desenho",
             "tesoura": "/img/desenho/tesoura.png",
             "pedra": "/img/desenho/pedra.png",
             "papel": "/img/desenho/papel.png"
+        },
+        {
+            "estilo": "Meme",
+            "tesoura": "/img/meme/tesoura.png",
+            "pedra": "/img/meme/pedra.png",
+            "papel": "/img/meme/papel.png"
+        },
+        {
+            "estilo": "Minecraft",
+            "tesoura": "/img/minecraft/tesoura.png",
+            "pedra": "/img/minecraft/pedra.png",
+            "papel": "/img/minecraft/papel.png"
         }
-    }
+    ]
 
     const [escolha, setEscolha] = useState('')
     const [botEscolha, setBot] = useState('')
     const [status, setStatus] = useState('')
     const [placar, setPlacar] = useState({"player": 0, "bot": 0})
+    const [skin, setSkin] = useState(0)
+
 
     console.log(`Player: ${placar.player}, BOT: ${placar.bot}`)
 
@@ -48,13 +64,18 @@ const Jogos = () =>{
                 } 
             </div>
             <div className="botoes">
-                <Buttons skin={skins.realista} 
+                <Buttons skin={skins[skin]} 
                         player_choice={escolha => setEscolha(escolha)} 
                         bot_choice={escolha => setBot(escolha)}
                         resultados = {res => setStatus(res)}
                         placarAtual = {placar}
                         placar = {pnts => setPlacar(pnts)}
                 />
+            </div>
+            <div className='select-estilo'>
+                <select required onChange = {(e) => setSkin(e.target.value)}>
+                    {skins.map((skin, i) => <option key={skin.estilo} value={i}>{skin.estilo}</option> )}
+                </select>
             </div>
         </section>
     )

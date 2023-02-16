@@ -12,3 +12,9 @@ body{
   color: var(--font);
   background-color: var(--bg);
 }
+
+.select-estilo select{
+  padding: 10px;
+  border-radius: 20px;
+  width: 300px;
+}
